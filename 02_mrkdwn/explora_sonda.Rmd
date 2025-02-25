@@ -14,136 +14,109 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 library(readxl)
 library(ggplot2)
 library(plotly)
-```
 
-# 1
-```{r echo=FALSE}
-# Lê a planilha 2 do arquivo
-dados1 <- read_excel("00_data/LOG001_0503093557.xls", sheet = 2)
 
-# Cria um gráfico combinando Pressão (psi) e pH
-p1 <- ggplot(dados1, aes(x = Time)) +
-  geom_line(aes(y = `Press.[psi]`, color = "Pressão (psi)"), size = 1) +
-  geom_line(aes(y = pH, color = "pH"), size = 1) +
-  labs(title = "LOG001_0503093557",
-       x = "Time",
-       y = "Valor") +
-  scale_color_manual(name = "Medição", 
-                     values = c("Pressão (psi)" = "blue", "pH" = "orange")) +
-  theme_minimal()
-
-# Exibe o gráfico interativo
-ggplotly(p1)
-
-```
-
-# 2
-```{r echo = FALSE}
-dados2 <- read_excel("00_data/LOG001_0525094516.xls", sheet = 2)
-
-p2 <- ggplot(dados2, aes(x = Time)) +
-  geom_line(aes(y = `Press.[psi]`, color = "Pressão (psi)"), size = 1) +
-  geom_line(aes(y = pH, color = "pH"), size = 1) +
-  labs(title = "LOG001_0525094516",
-       x = "Time",
-       y = "Valor") +
-  scale_color_manual(name = "Medição", 
-                     values = c("Pressão (psi)" = "green", "pH" = "orange")) +
-  theme_minimal()
-
-ggplotly(p2)
-```
-
-# 3 - FAZER FUNÇÃO
-```{r echo = FALSE}
 library(readxl)
 library(plotly)
 library(lubridate)
 library(stringr)
+library(dplyr)
 
-# Lê a planilha 2 do arquivo
-dados3 <-
-  read_excel(
-    "00_data/LOG001_0819084932.xls",
-    sheet = 2,
-    col_types = c ("date", "date", "numeric", "numeric", "numeric",
-                   "numeric", "numeric", "numeric", "numeric", "numeric",
-                   "numeric", "numeric", "numeric", "numeric", "numeric",
-                   "numeric", "text", "text", "numeric", "numeric")) %>%
-  mutate(data_hora = ymd_hms(str_c(as.character.Date(Date), str_sub(as.character.Date(Time), 12, 19)))) %>%
-  select(data_hora,
-         Pres = `Press.[psi]`,
-         Temp = `Temp.[°C]`,
-         Turb = `Turb.FNU`,
-         Sal = `Sal.[psu]`,
-         OD = `D.O.[ppm]`,
-         pH)
+gera_grafico <- function(caminho) {
+  # Lê a planilha 2 do arquivo com os tipos de coluna especificados
+  dados <- read_excel(caminho, sheet = 2,
+                      col_types = c("date", "date", "numeric", "numeric", "numeric",
+                                    "numeric", "numeric", "numeric", "numeric", "numeric",
+                                    "numeric", "numeric", "numeric", "numeric", "numeric",
+                                    "numeric", "text", "text", "numeric", "numeric")) %>%
+    mutate(data_hora = ymd_hms(str_c(as.character(Date), str_sub(as.character(Time), 12, 19)))) %>%
+    select(data_hora,
+           Pres = `Press.[psi]`,
+           Temp = `Temp.[°C]`,
+           Turb = `Turb.FNU`,
+           Sal = `Sal.[psu]`,
+           OD = `D.O.[ppm]`,
+           pH)
+  
+  # Cria o gráfico com múltiplos eixos y
+  p <- plot_ly() %>%
+    add_lines(data = dados, x = ~data_hora, y = ~Pres, name = "Pressão (psi)", line = list(color = "red")) %>%
+    add_lines(data = dados, x = ~data_hora, y = ~Temp, name = "Temperatura (°C)", yaxis = "y2", line = list(color = "blue")) %>%
+    add_lines(data = dados, x = ~data_hora, y = ~pH, name = "pH", yaxis = "y3", line = list(color = "orange")) %>%
+    add_lines(data = dados, x = ~data_hora, y = ~Turb, name = "Turbidez (FNU)", yaxis = "y4", line = list(color = "green")) %>%
+    add_lines(data = dados, x = ~data_hora, y = ~OD, name = "Oxigênio dissolvido (ppm)", yaxis = "y5", line = list(color = "purple")) %>%
+    add_lines(data = dados, x = ~data_hora, y = ~Sal, name = "Salinidade (psu)", yaxis = "y6", line = list(color = "brown")) %>%
+    layout(
+      title = paste0(basename(caminho), " - Múltiplos Eixos Y"),
+      xaxis = list(title = "Data hora", domain = c(0.15, 0.80)),
+      yaxis = list(
+        title = "Pressão (psi)",
+        titlefont = list(color = "red"),
+        tickfont = list(color = "red")
+      ),
+      yaxis2 = list(
+        title = "Temperatura (°C)",
+        titlefont = list(color = "blue"),
+        tickfont = list(color = "blue"),
+        overlaying = "y",
+        side = "right",
+        position = 0.90,
+        anchor = "free"
+      ),
+      yaxis3 = list(
+        title = "pH",
+        titlefont = list(color = "orange"),
+        tickfont = list(color = "orange"),
+        overlaying = "y",
+        side = "right",
+        position = 0.85,
+        anchor = "free"
+      ),
+      yaxis4 = list(
+        title = "Turbidez (FNU)",
+        titlefont = list(color = "green"),
+        tickfont = list(color = "green"),
+        overlaying = "y",
+        side = "left",
+        position = 0.05,
+        anchor = "free"
+      ),
+      yaxis5 = list(
+        title = "Oxigênio dissolvido (ppm)",
+        titlefont = list(color = "purple"),
+        tickfont = list(color = "purple"),
+        overlaying = "y",
+        side = "left",
+        position = 0.10,
+        anchor = "free"
+      ),
+      yaxis6 = list(
+        title = "Salinidade (psu)",
+        titlefont = list(color = "brown"),
+        tickfont = list(color = "brown"),
+        overlaying = "y",
+        side = "right",
+        position = 0.95,
+        anchor = "free"
+      ),
+      legend = list(orientation = 'h', x = 0.1, y = -0.2)
+    )
+  
+  return(p)
+}
+```
 
-# Cria o gráfico com múltiplos eixos y
-p <-
-  plot_ly() %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~Pres, name = "Pressão (psi)", line = list(color = "red")) %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~Temp, name = "Temperatura (°C)", yaxis = "y2", line = list(color = "blue")) %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~pH, name = "pH", yaxis = "y3", line = list(color = "orange")) %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~Turb, name = "Turbidez (FNU)", yaxis = "y4", line = list(color = "green")) %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~OD, name = "Oxigênio dissolvido (ppm)", yaxis = "y5", line = list(color = "purple")) %>%
-  add_lines(data = dados3, x = ~data_hora, y = ~Sal, name = "Salinidade (psu)", yaxis = "y6", line = list(color = "brown")) %>%
-  layout(
-    title = "LOG001_0819084932 - Múltiplos Eixos Y",
-    xaxis = list(title = "Data hora", domain = c(0.15, 0.85)),
-    yaxis = list(
-      title = "Pressão (psi)",
-      titlefont = list(color = "red"),
-      tickfont = list(color = "red")
-    ),
-    yaxis2 = list(
-      title = "Temperatura (°C)",
-      titlefont = list(color = "blue"),
-      tickfont = list(color = "blue"),
-      overlaying = "y",
-      side = "right",
-      position = 0.95,
-      anchor = "free"
-    ),
-    yaxis3 = list(
-      title = "pH",
-      titlefont = list(color = "orange"),
-      tickfont = list(color = "orange"),
-      overlaying = "y",
-      side = "right",
-      position = 0.90,
-      anchor = "free"
-    ),
-    yaxis4 = list(
-      title = "Turbidez (FNU)",
-      titlefont = list(color = "green"),
-      tickfont = list(color = "green"),
-      overlaying = "y",
-      side = "left",
-      position = 0.05,
-      anchor = "free"
-    ),
-    yaxis5 = list(
-      title = "Oxigênio dissolvido (ppm)",
-      titlefont = list(color = "purple"),
-      tickfont = list(color = "purple"),
-      overlaying = "y",
-      side = "left",
-      position = 0.10,
-      anchor = "free"
-    ),
-    yaxis6 = list(
-      title = "Salinidade (psu)",
-      titlefont = list(color = "brown"),
-      tickfont = list(color = "brown"),
-      overlaying = "y",
-      side = "right",
-      position = 1.00,
-      anchor = "free"
-    ),
-    legend = list(orientation = 'h', x = 0.1, y = -0.2)
-  )
+# 1
+```{r echo=FALSE}
+gera_grafico("00_data/LOG001_0503093557.xls")
+```
 
-p
+# 2
+```{r echo = FALSE}
+gera_grafico("00_data/LOG001_0525094516.xls")
+```
 
+# 3
+```{r echo = FALSE}
+gera_grafico("00_data/LOG001_0819084932.xls")
 ```
