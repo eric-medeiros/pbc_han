@@ -2,36 +2,95 @@
 title: "Relatório de Logs"
 output: 
   flexdashboard::flex_dashboard:
+    source_code: embed
     orientation: columns
     vertical_layout: fill
 ---
 
-```{r setup, include=FALSE}
+```{r include=FALSE}
 # Configurações iniciais
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(here)
 
-source("../01_scripts/han_junta.R")
-source("../01_scripts/han_gera_grafico.R")
+source(here("01_scripts", "han_junta.R"))
+source(here("01_scripts", "han_gera_grafico.R"))
 
-pasta_data <- "../00_data"
+pasta_data <- here("00_data")
 
 dados_juntos <- han_junta(pasta_data)
 
-# FASER OS GRáFICOS aqui!!!
-
+lista_saidas_c_sonda <- unique(dados_juntos$sonda$saida)
 ```
 
-# 1
-```{r echo=FALSE}
-gera_grafico("00_data/LOG001_0503093557.xls")
+# Gráficos
+
+## {.tabset}
+
+### Saída `r lista_saidas_c_sonda[1]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 1)
 ```
 
-# 2
-```{r echo = FALSE}
-gera_grafico("00_data/LOG001_0525094516.xls")
+### Saída `r lista_saidas_c_sonda[2]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 2)
 ```
 
-# 3
-```{r echo = FALSE}
-gera_grafico("00_data/LOG001_0819084932.xls")
+### Saída `r lista_saidas_c_sonda[3]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 3)
+```
+
+### Saída `r lista_saidas_c_sonda[4]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 4)
+```
+
+### Saída `r lista_saidas_c_sonda[5]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 5)
+```
+
+### Saída `r lista_saidas_c_sonda[6]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 6)
+```
+
+### Saída `r lista_saidas_c_sonda[7]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 7)
+```
+
+### Saída `r lista_saidas_c_sonda[8]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 8)
+```
+
+### Saída `r lista_saidas_c_sonda[9]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 9)
+```
+
+### Saída `r lista_saidas_c_sonda[10]`
+```{r}
+han_gera_grafico(dados_juntos, lista_saidas_c_sonda, 10)
+```
+
+# Dados
+
+## {.tabset}
+
+### Saídas
+```{r}
+dados_juntos$saidas %>% filter(saida %in% lista_saidas_c_sonda) %>% DT::datatable()
+```
+
+### Amostragens
+```{r}
+dados_juntos$amostragens %>% filter(saida %in% lista_saidas_c_sonda) %>% DT::datatable()
+```
+
+### Grupos
+```{r}
+dados_juntos$avistagens %>% filter(saida %in% lista_saidas_c_sonda) %>% DT::datatable()
 ```
