@@ -5,7 +5,8 @@ han_le_sonda <- function(pasta_data) {
   library(lubridate)
   library(purrr)
 
-  lista_caminhos_sonda <- list.files(pasta_data, pattern = "LOG", full.names = TRUE)
+  pasta_sonda <- file.path(pasta_data, "SONDA")
+  lista_caminhos_sonda <- list.files(pasta_sonda, pattern = "LOG", full.names = TRUE)
 
   le_arquivo_sonda <- function(arquivo_sonda) {
     # Lê a planilha 2 do arquivo com os tipos de coluna especificados
@@ -16,15 +17,20 @@ han_le_sonda <- function(pasta_data) {
                                "numeric", "numeric", "numeric", "numeric", "numeric",
                                "numeric", "numeric", "numeric", "numeric", "numeric",
                                "numeric", "text", "text", "numeric", "numeric")) %>%
-      mutate(data_hora = ymd_hms(str_c(as.character(Date), str_sub(as.character(Time), 12, 19)))) %>%
-      select(data_hora,
-             Pres = `Press.[psi]`,
-             Temp = `Temp.[°C]`,
-             Turb = `Turb.FNU`,
-             Sal = `Sal.[psu]`,
-             OD = `D.O.[ppm]`,
-             pH) %>%
-      suppressWarnings()
+      mutate(data_hora = ymd_hms(str_c(as.character(Date), str_sub(as.character(Time), 12, 19))),
+             data = date(data_hora),
+             lng = as.numeric(str_sub(`GPS Long.`, 1,8))*-1,
+             lat = as.numeric(str_sub(`GPS Lat.`, 1,8))*-1) %>%
+      suppressWarnings() %>%
+      select(21,22,
+             Pres = 13,
+             Temp = 3,
+             Turb = 16,
+             Sal = 11,
+             OD = 15,
+             4,
+             23,
+             24)
 
     return(dados_arquivo)
   }

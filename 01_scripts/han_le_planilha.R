@@ -6,7 +6,7 @@ han_le_planilha <- function(pasta_data) {
     require(stringr)
   })
 
-  arquivo_excel <- file.path(pasta_data, "populacional_PBC_sonda.xlsx")
+  arquivo_excel <- file.path(pasta_data, "EXCEL", "populacional_PBC_sonda.xlsx")
 
   result <-
     list(
