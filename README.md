@@ -32,6 +32,7 @@ Pacote para análise de dados ambientais e biológicos coletados em saídas de c
 ---
 
 ## Estrutura do Projeto
+
 pbc_han/
 ├── 00_data/ # Dados brutos
 │ ├── EXCEL/ # Planilhas de controle
